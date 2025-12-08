@@ -1,0 +1,46 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="text-center mb-5 mt-4">
+    <h1 class="display-5 fw-bold text-white">Bienvenido a Recepción</h1>
+    <p class="text-gold lead">Gestión y control de estadías</p>
+</div>
+
+<div class="row justify-content-center g-4">
+    <div class="col-md-5">
+        <a href="/clients/read" class="text-decoration-none">
+            <div class="card h-100 text-center p-5 hover-gold border-secondary">
+                <div class="card-body">
+                    <div class="icon-circle bg-dark d-inline-flex align-items-center justify-content-center rounded-circle mb-3 border border-secondary" style="width: 90px; height: 90px;">
+                        <i class="fas fa-address-book fa-2x text-white"></i>
+                    </div>
+                    <h3 class="text-white mt-3">Directorio de Huéspedes</h3>
+                    <p class="text-muted">Consultar registros actuales</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-5">
+        <a href="/clients/create" class="text-decoration-none">
+            <div class="card h-100 text-center p-5 hover-gold border-secondary">
+                <div class="card-body">
+                    <div class="icon-circle bg-dark d-inline-flex align-items-center justify-content-center rounded-circle mb-3 border border-secondary" style="width: 90px; height: 90px;">
+                        <i class="fas fa-luggage-cart fa-2x text-gold"></i>
+                    </div>
+                    <h3 class="text-white mt-3">Nuevo Check-in</h3>
+                    <p class="text-muted">Registrar entrada de huésped</p>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<style>
+    .hover-gold:hover {
+        transform: translateY(-5px);
+        border-color: #d4af37 !important;
+        transition: all 0.3s ease;
+    }
+</style>
+{% endblock %}

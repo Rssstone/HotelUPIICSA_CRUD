@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPIICSA Grand Hotel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            background-color: #121212; 
+            font-family: 'Playfair Display', serif; 
+        }
+        .navbar {
+            background-color: #1f1f1f !important;
+            border-bottom: 1px solid #d4af37; 
+        }
+        .card { 
+            background-color: #1e1e1e; 
+            border: 1px solid #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+        }
+        .text-gold { color: #d4af37 !important; }
+        .btn-primary {
+            background-color: #d4af37; /* Dorado */
+            border-color: #d4af37;
+            color: #000;
+        }
+        .btn-primary:hover {
+            background-color: #b39025;
+            border-color: #b39025;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4 py-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-uppercase" href="/">
+                <i class="fas fa-hotel me-2 text-gold"></i>UPIICSA <span class="text-gold">Grand Hotel</span>
+            </a>
+            
+            {% if current_user.is_authenticated %}
+            <div class="d-flex align-items-center text-white">
+                <div class="me-3 text-end">
+                    <small class="d-block text-muted" style="line-height: 1;">Recepción</small>
+                    <span class="fw-bold text-gold">{{ current_user.username }}</span>
+                </div>
+                <a href="/logout" class="btn btn-sm btn-outline-secondary"><i class="fas fa-sign-out-alt"></i></a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

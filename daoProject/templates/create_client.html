@@ -1,0 +1,75 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/clients/read" class="text-decoration-none text-gold">Huéspedes</a></li>
+                <li class="breadcrumb-item active text-muted" aria-current="page">Nuevo Ingreso</li>
+            </ol>
+        </nav>
+
+        <div class="card border-secondary">
+            <div class="card-header bg-transparent py-3 border-secondary">
+                <h4 class="mb-0 text-white"><i class="fas fa-suitcase me-2 text-gold"></i>Registro de Check-in</h4>
+            </div>
+            <div class="card-body p-4">
+                <form id="create-client-form">
+                    <div class="mb-3">
+                        <label class="form-label text-gold small text-uppercase">Nombre Completo</label>
+                        <input type="text" name="name" class="form-control bg-dark border-secondary text-white" required placeholder="Ej. Sr. Juan Pérez">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-gold small text-uppercase">Email de Contacto</label>
+                        <input type="email" name="email" class="form-control bg-dark border-secondary text-white" required placeholder="juan@email.com">
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/clients/read" class="btn btn-outline-secondary me-md-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">Registrar Entrada</button>
+                    </div>
+                </form>
+                <div id="message" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    document.getElementById('create-client-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+
+        const data = {
+            name: document.querySelector('input[name="name"]').value,
+            email: document.querySelector('input[name="email"]').value
+        };
+        
+        fetch('/clients/create/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(data => {
+            const msg = document.getElementById('message');
+            if(data.message.includes("created")) {
+                msg.innerHTML = `<div class="alert alert-success border-0 bg-success bg-opacity-25 text-success"><i class="fas fa-check me-2"></i>Check-in realizado con éxito.</div>`;
+                setTimeout(() => window.location.href = "/clients/read", 1500);
+            } else {
+                msg.innerHTML = `<div class="alert alert-danger border-0"><i class="fas fa-exclamation-triangle me-2"></i>${data.message}</div>`;
+                btn.disabled = false;
+                btn.textContent = 'Registrar Entrada';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            btn.disabled = false;
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Client</title>
+</head>
+<body>
+    <h1>Delete Client</h1>
+    <form id="delete-client-form">
+        <input type="text" name="id_client" placeholder="Client ID" required>
+        <button type="submit">Delete Client</button>
+    </form>
+    <p id="message"></p>
+    <script>
+        document.getElementById('delete-client-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const id_client = formData.get('id_client');
+            fetch(`/clients/delete/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id_client })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const messageElement = document.getElementById('message');
+                messageElement.textContent = data.message;
+                messageElement.style.color = 'green';
+            })
+            .catch(error => {
+                const messageElement = document.getElementById('message');
+                messageElement.textContent = 'Error deleting client';
+                messageElement.style.color = 'red';
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

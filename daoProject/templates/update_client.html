@@ -1,0 +1,66 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/clients/read" class="text-decoration-none text-gold">Huéspedes</a></li>
+                <li class="breadcrumb-item active text-muted" aria-current="page">Editar</li>
+            </ol>
+        </nav>
+
+        <div class="card border-warning">
+            <div class="card-header bg-transparent py-3 border-warning">
+                <h4 class="mb-0 text-white"><i class="fas fa-edit me-2 text-warning"></i>Modificar Datos de Huésped</h4>
+            </div>
+            <div class="card-body p-4">
+                <form id="update-client-form">
+                    <div class="mb-3">
+                        <label class="form-label text-warning small text-uppercase">Nombre del Huésped</label>
+                        <input type="text" id="name" class="form-control bg-dark border-secondary text-white" value="{{ client.name }}" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-warning small text-uppercase">Contacto</label>
+                        <input type="email" id="email" class="form-control bg-dark border-secondary text-white" value="{{ client.email }}" required>
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/clients/read" class="btn btn-outline-secondary me-md-2">Cancelar</a>
+                        <button type="submit" class="btn btn-warning px-4 text-dark fw-bold">Guardar Cambios</button>
+                    </div>
+                </form>
+                <div id="message" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    const id_client = window.location.pathname.split('/').pop();
+    document.getElementById('update-client-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const data = {
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value
+        };
+
+        fetch(`/clients/update/${id_client}`, {  
+            method: 'POST',  
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(data => {
+            const msg = document.getElementById('message');
+            if(data.message.includes("updated")) {
+                msg.innerHTML = `<div class="alert alert-success border-0 bg-success bg-opacity-25 text-success"><i class="fas fa-check me-2"></i>Datos actualizados.</div>`;
+                setTimeout(() => window.location.href = "/clients/read", 1500);
+            } else {
+                msg.innerHTML = `<div class="alert alert-danger border-0">${data.message}</div>`;
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}
