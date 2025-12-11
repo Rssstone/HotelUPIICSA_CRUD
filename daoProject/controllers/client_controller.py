@@ -17,12 +17,25 @@ def create_client():
         data = request.get_json()
         if not data:
             return jsonify(message="No data provided"), 400
+        
+        # Validar campos obligatorios
+        if 'room' not in data or 'days' not in data:
+             return jsonify(message="Faltan datos de habitación o días"), 400
+
         try:
-            client_dao.create_client(data)
-            return jsonify(message="Client created"), 201
+            success = client_dao.create_client(data)
+            if success:
+                return jsonify(message="Client created"), 201
+            else:
+                # Si create_client devuelve False (ej. habitación ocupada)
+                return jsonify(message="Error: La habitación ya está ocupada o hubo un error."), 409
         except PyMongoError as e:
             return jsonify(message=f"Error creating client: {e}"), 500
-    return render_template('create_client.html')
+    
+    # METODO GET: Preparamos los datos para la vista
+    # Obtenemos las habitaciones ocupadas para pintarlas de rojo
+    occupied_rooms = client_dao.get_occupied_rooms()
+    return render_template('create_client.html', occupied_rooms=occupied_rooms)
 
 @client_controller.route('/clients/read/', methods=['GET'])
 @login_required

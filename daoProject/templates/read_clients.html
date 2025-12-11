@@ -1,6 +1,19 @@
 {% extends 'layout.html' %}
 
 {% block content %}
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header bg-dark text-white border-bottom border-secondary">
+      <i class="fas fa-bell text-gold me-2"></i>
+      <strong class="me-auto">Sistema Hotel</strong>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body bg-dark text-white" id="toastMessage">
+      Acción completada.
+    </div>
+  </div>
+</div>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="text-white mb-0">Huéspedes Registrados</h2>
@@ -12,21 +25,27 @@
 <div class="card border-0 shadow-lg">
     <div class="card-body p-0 rounded overflow-hidden">
         <div class="table-responsive">
-            <table class="table table-dark table-hover mb-0 align-middle">
+            <table class="table table-dark table-hover mb-0 align-middle" id="clientsTable">
                 <thead class="bg-black text-gold text-uppercase small" style="border-bottom: 2px solid #333;">
                     <tr>
-                        <th class="ps-4 py-3">ID Reserva</th>
+                        <th class="ps-4 py-3">Habitación</th>
                         <th class="py-3">Huésped Titular</th>
-                        <th class="py-3">Contacto (Email)</th>
+                        <th class="py-3">Estancia</th>
+                        <th class="py-3">Contacto</th>
                         <th class="text-center py-3">Servicios</th>
                     </tr>
                 </thead>
                 <tbody class="border-top-0">
                     {% for client in clients %}
-                    <tr>
-                        <td class="ps-4 text-muted font-monospace small">{{ client['_id'] }}</td>
+                    <tr id="row-{{ client['_id'] }}">
+                        <td class="ps-4">
+                            <span class="badge bg-warning text-dark fs-6">Hab. {{ client.get('room', '?') }}</span>
+                        </td>
                         <td class="fw-bold text-white">
                             <i class="fas fa-user-circle me-2 text-secondary"></i>{{ client['name'] }}
+                        </td>
+                        <td class="text-info">
+                            <i class="fas fa-clock me-1"></i> {{ client.get('days', '-') }} días
                         </td>
                         <td class="text-secondary">{{ client['email'] }}</td>
                         <td class="text-center">
@@ -34,17 +53,18 @@
                                 <a href="/clients/update/{{ client['_id'] }}" class="btn btn-outline-light text-gold" title="Modificar Datos">
                                     <i class="fas fa-pen"></i>
                                 </a>
-                                <a href="/clients/delete/{{ client['_id'] }}" class="btn btn-outline-danger" 
-                                   onclick="return confirm('¿Confirmar Check-out y eliminación de registro para {{ client.name }}?')"
-                                   title="Eliminar registro">
-                                    <i class="fas fa-trash"></i>
-                                </a>
+                                <button type="button" 
+                                        class="btn btn-outline-danger" 
+                                        onclick="deleteClient('{{ client['_id'] }}', '{{ client.get('room', '?') }}')"
+                                        title="Eliminar registro">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
                     {% else %}
-                    <tr>
-                        <td colspan="4" class="text-center py-5 text-muted">
+                    <tr id="no-data-row">
+                        <td colspan="5" class="text-center py-5 text-muted">
                             <i class="fas fa-bed fa-3x mb-3 d-block opacity-25"></i>
                             Sin huéspedes registrados por el momento.
                         </td>
@@ -55,4 +75,57 @@
         </div>
     </div>
 </div>
+
+{% block scripts %}
+<script>
+    function deleteClient(id, room) {
+        if(!confirm(`¿Liberar habitación ${room} y confirmar salida?`)) return;
+
+        // Llamada AJAX (Fetch) para no recargar la página
+        fetch(`/clients/delete/${id}`, {
+            method: 'GET' // O POST, según como lo tengas en el controller
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message.includes("deleted")) {
+                // 1. Eliminar la fila de la tabla visualmente con animación
+                const row = document.getElementById(`row-${id}`);
+                if(row) {
+                    row.style.transition = "all 0.5s";
+                    row.style.opacity = "0";
+                    setTimeout(() => row.remove(), 500);
+                }
+
+                // 2. Mostrar Notificación Push (Toast)
+                showToast("Check-out realizado exitosamente.", "success");
+            } else {
+                showToast("Error: " + data.message, "danger");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast("Error de conexión con el servidor.", "danger");
+        });
+    }
+
+    function showToast(message, type) {
+        const toastEl = document.getElementById('liveToast');
+        const toastBody = document.getElementById('toastMessage');
+        const toastHeader = toastEl.querySelector('.toast-header');
+
+        toastBody.textContent = message;
+        
+        // Cambiar color del icono según el tipo
+        const icon = toastHeader.querySelector('i');
+        if(type === 'success') {
+            icon.className = 'fas fa-check-circle text-success me-2';
+        } else {
+            icon.className = 'fas fa-exclamation-circle text-danger me-2';
+        }
+
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
+</script>
+{% endblock %}
 {% endblock %}

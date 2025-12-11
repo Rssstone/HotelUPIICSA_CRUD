@@ -66,4 +66,4 @@ def logout():
 
 if __name__ == '__main__':
     ensure_admin_exists()
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)
