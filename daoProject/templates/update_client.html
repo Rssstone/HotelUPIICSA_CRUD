@@ -26,6 +26,12 @@
                         <label class="form-label text-warning small text-uppercase">Nombre del Huésped</label>
                         <input type="text" id="name" class="form-control bg-dark border-secondary text-white" value="{{ client.name }}" required>
                     </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-warning small text-uppercase">Duración (Días)</label>
+                        <input type="number" id="days" class="form-control bg-dark border-secondary text-white" value="{{ client.get('days', 1) }}" min="1" max="30" required>
+                    </div>
+
                     <div class="mb-4">
                         <label class="form-label text-warning small text-uppercase">Contacto</label>
                         <input type="email" id="email" class="form-control bg-dark border-secondary text-white" value="{{ client.email }}" required>
@@ -50,7 +56,6 @@
 
 {% block scripts %}
 <script>
-    // Obtenemos el ID desde la URL actual
     const id_client = window.location.pathname.split('/').pop();
     
     document.getElementById('update-client-form').addEventListener('submit', function(e) {
@@ -62,7 +67,8 @@
 
         const data = {
             name: document.getElementById('name').value,
-            email: document.getElementById('email').value
+            email: document.getElementById('email').value,
+            days: document.getElementById('days').value
         };
 
         fetch(`/clients/update/${id_client}`, {  

@@ -31,7 +31,7 @@
                     <div class="row mb-4">
                         <div class="col-md-4">
                             <label class="form-label text-gold small text-uppercase">Duración (Días)</label>
-                            <input type="number" name="days" min="1" max="30" class="form-control bg-dark border-secondary text-white text-center fw-bold" required value="1">
+                            <input type="number" name="days" min="10" max="45" class="form-control bg-dark border-secondary text-white text-center fw-bold" required value="1">
                         </div>
                         <div class="col-md-8">
                             <label class="form-label text-gold small text-uppercase mb-2">Selección de Habitación</label>
@@ -48,7 +48,7 @@
                                         {% else %}
                                             <button type="button" class="btn btn-outline-success room-btn available-room" 
                                                     data-room="{{ i }}"
-                                                    onclick="selectRoom(this, {{ i }})"
+                                                    onclick="selectRoom(this, '{{ i }}')"
                                                     style="width: 45px; height: 45px; font-size: 0.8rem;">
                                                 {{ i }}
                                             </button>
@@ -90,11 +90,10 @@
 
 {% block scripts %}
 <script>
-    // Variable global para evitar doble envío lógico
     let isSubmitting = false;
 
     function selectRoom(btn, roomNumber) {
-        if (isSubmitting) return; // No permitir cambiar habitación mientras se envía
+        if (isSubmitting) return;
 
         document.querySelectorAll('.available-room').forEach(b => {
             b.classList.remove('selected');
@@ -112,7 +111,6 @@
     document.getElementById('create-client-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Bloqueo inmediato si ya se está enviando
         if (isSubmitting) return;
 
         const room = document.getElementById('selected_room').value;
@@ -121,7 +119,6 @@
             return;
         }
 
-        // Activar bandera de bloqueo
         isSubmitting = true;
 
         const btn = e.target.querySelector('button[type="submit"]');
@@ -143,14 +140,11 @@
         .then(res => res.json())
         .then(data => {
             const msg = document.getElementById('message');
-            // Aceptar códigos 201 (Creado)
             if(data.message.includes("created") || data.message.includes("Client created")) {
                 msg.innerHTML = `<div class="alert alert-success border-0 bg-success bg-opacity-25 text-success"><i class="fas fa-check me-2"></i>Check-in realizado. Habitación ${room} asignada.</div>`;
                 setTimeout(() => window.location.href = "/clients/read", 1500);
             } else {
-                // Manejar error (incluyendo el error de duplicado si ocurre)
                 msg.innerHTML = `<div class="alert alert-danger border-0"><i class="fas fa-exclamation-triangle me-2"></i>${data.message}</div>`;
-                // Si falla, reactivamos el botón para corregir
                 btn.disabled = false;
                 btn.textContent = 'Confirmar Registro';
                 isSubmitting = false;

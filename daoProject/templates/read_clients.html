@@ -75,28 +75,25 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block scripts %}
 <script>
     function deleteClient(id, room) {
         if(!confirm(`¿Liberar habitación ${room} y confirmar salida?`)) return;
 
-        // Llamada AJAX (Fetch) para no recargar la página
         fetch(`/clients/delete/${id}`, {
-            method: 'GET' // O POST, según como lo tengas en el controller
+            method: 'GET'
         })
         .then(response => response.json())
         .then(data => {
             if (data.message.includes("deleted")) {
-                // 1. Eliminar la fila de la tabla visualmente con animación
                 const row = document.getElementById(`row-${id}`);
                 if(row) {
                     row.style.transition = "all 0.5s";
                     row.style.opacity = "0";
                     setTimeout(() => row.remove(), 500);
                 }
-
-                // 2. Mostrar Notificación Push (Toast)
                 showToast("Check-out realizado exitosamente.", "success");
             } else {
                 showToast("Error: " + data.message, "danger");
@@ -115,7 +112,6 @@
 
         toastBody.textContent = message;
         
-        // Cambiar color del icono según el tipo
         const icon = toastHeader.querySelector('i');
         if(type === 'success') {
             icon.className = 'fas fa-check-circle text-success me-2';
@@ -126,6 +122,22 @@
         const toast = new bootstrap.Toast(toastEl);
         toast.show();
     }
+
+    setInterval(() => {
+        fetch('/clients/read/')
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newBody = doc.querySelector('#clientsTable tbody');
+                const oldBody = document.querySelector('#clientsTable tbody');
+                if (newBody && oldBody) {
+                    if (oldBody.innerHTML.trim() !== newBody.innerHTML.trim()) {
+                        oldBody.innerHTML = newBody.innerHTML;
+                    }
+                }
+            })
+            .catch(err => console.error("Error actualizando tabla:", err));
+    }, 2000); 
 </script>
-{% endblock %}
 {% endblock %}
