@@ -69,6 +69,7 @@ def update_client(id_client):
             data = request.get_json()
             if not data:
                 return jsonify(message="No data provided"), 400
+            
             if 'days' in data:
                 try:
                     data['days'] = int(data['days'])
@@ -77,17 +78,29 @@ def update_client(id_client):
                 except ValueError:
                     return jsonify(message="Error: El valor de días es inválido"), 400
 
+            if 'room' in data:
+                try:
+                    data['room'] = int(data['room'])
+                    if data['room'] < 1 or data['room'] > 20:
+                         return jsonify(message="Error: Habitación inválida"), 400
+                except ValueError:
+                    return jsonify(message="Error: El valor de habitación es inválido"), 400
+
             success = client_dao.update_client(id_client, data)
             if success:
                 return jsonify(message="Client updated"), 200
             else:
                 return jsonify(message="Client not found"), 404
+                
+        except ValueError as e:
+            return jsonify(message=str(e)), 409
         except PyMongoError as e:
             return jsonify(message=f"Error updating client: {e}"), 500
 
     client = client_dao.read_client(id_client)
     if client:
-        return render_template('update_client.html', client=client)
+        occupied_rooms = client_dao.get_occupied_rooms()
+        return render_template('update_client.html', client=client, occupied_rooms=occupied_rooms)
     else:
         return jsonify(message="Client not found"), 404
 

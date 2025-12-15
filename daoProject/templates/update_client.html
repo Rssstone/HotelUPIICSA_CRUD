@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-7 col-lg-6">
+    <div class="col-md-8 col-lg-7">
         
         <div class="mb-4">
             <a href="/clients/read" class="btn btn-outline-light border-secondary text-gold px-4 rounded-pill hover-scale">
@@ -16,25 +16,58 @@
             </div>
             <div class="card-body p-4 bg-dark-subtle">
                 <form id="update-client-form">
-                    <div class="mb-3 text-end">
-                        <span class="badge bg-warning text-dark fs-6">
-                            Habitación Actual: {{ client.get('room', 'N/A') }}
-                        </span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label text-warning small text-uppercase">Nombre del Huésped</label>
-                        <input type="text" id="name" class="form-control bg-dark border-secondary text-white" value="{{ client.name }}" required>
-                    </div>
                     
-                    <div class="mb-3">
-                        <label class="form-label text-warning small text-uppercase">Duración (Días)</label>
-                        <input type="number" id="days" class="form-control bg-dark border-secondary text-white" value="{{ client.get('days', 1) }}" min="1" max="30" required>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-warning small text-uppercase">Nombre del Huésped</label>
+                            <input type="text" id="name" class="form-control bg-dark border-secondary text-white" value="{{ client.name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-warning small text-uppercase">Duración (Días)</label>
+                            <input type="number" id="days" class="form-control bg-dark border-secondary text-white" value="{{ client.get('days', 1) }}" min="1" max="30" required>
+                        </div>
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label text-warning small text-uppercase">Contacto</label>
                         <input type="email" id="email" class="form-control bg-dark border-secondary text-white" value="{{ client.email }}" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-warning small text-uppercase mb-2">Cambio de Habitación</label>
+                        <div class="room-grid p-3 rounded border border-secondary bg-black">
+                            <input type="hidden" id="selected_room" value="{{ client.get('room') }}">
+                            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                {% for i in range(1, 21) %}
+                                    {% if i == client.get('room') %}
+                                        <button type="button" class="btn btn-warning room-btn selected fw-bold" 
+                                                data-room="{{ i }}"
+                                                onclick="selectRoom(this, '{{ i }}')"
+                                                style="width: 45px; height: 45px; font-size: 0.8rem; box-shadow: 0 0 10px #ffc107;">
+                                            {{ i }}
+                                        </button>
+                                    {% elif i in occupied_rooms %}
+                                        <button type="button" class="btn btn-danger disabled opacity-25 room-btn" 
+                                                style="width: 45px; height: 45px; font-size: 0.8rem;" 
+                                                title="Ocupada">
+                                            {{ i }}
+                                        </button>
+                                    {% else %}
+                                        <button type="button" class="btn btn-outline-success room-btn available-room" 
+                                                data-room="{{ i }}"
+                                                onclick="selectRoom(this, '{{ i }}')"
+                                                style="width: 45px; height: 45px; font-size: 0.8rem;">
+                                            {{ i }}
+                                        </button>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="text-center mt-2 small text-muted">
+                                <span class="me-3"><i class="fas fa-square text-warning me-1"></i>Actual</span>
+                                <span class="me-3"><i class="fas fa-square text-success me-1"></i>Disponible</span>
+                                <span><i class="fas fa-square text-danger opacity-50 me-1"></i>Ocupada</span>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="d-grid gap-2">
@@ -58,6 +91,20 @@
 <script>
     const id_client = window.location.pathname.split('/').pop();
     
+    function selectRoom(btn, roomNumber) {
+        document.querySelectorAll('.room-btn').forEach(b => {
+            if (!b.classList.contains('disabled')) {
+                b.className = 'btn btn-outline-success room-btn available-room';
+                b.style.boxShadow = 'none';
+            }
+        });
+
+        btn.className = 'btn btn-warning room-btn selected fw-bold';
+        btn.style.boxShadow = '0 0 10px #ffc107';
+        
+        document.getElementById('selected_room').value = roomNumber;
+    }
+
     document.getElementById('update-client-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -68,7 +115,8 @@
         const data = {
             name: document.getElementById('name').value,
             email: document.getElementById('email').value,
-            days: document.getElementById('days').value
+            days: document.getElementById('days').value,
+            room: document.getElementById('selected_room').value
         };
 
         fetch(`/clients/update/${id_client}`, {  
@@ -79,17 +127,18 @@
         .then(res => res.json())
         .then(data => {
             const msg = document.getElementById('message');
-            if(data.message.includes("updated") || data.message.includes("Client updated")) {
+            if(data.message && (data.message.includes("updated") || data.message.includes("Client updated"))) {
                 msg.innerHTML = `<div class="alert alert-success border-0 bg-success bg-opacity-25 text-success"><i class="fas fa-check me-2"></i>Datos actualizados correctamente.</div>`;
                 setTimeout(() => window.location.href = "/clients/read", 1500);
             } else {
-                msg.innerHTML = `<div class="alert alert-danger border-0">${data.message}</div>`;
+                msg.innerHTML = `<div class="alert alert-danger border-0"><i class="fas fa-exclamation-circle me-2"></i>${data.message}</div>`;
                 btn.disabled = false;
                 btn.textContent = 'Guardar Cambios';
             }
         })
         .catch(err => {
             console.error(err);
+            document.getElementById('message').innerHTML = `<div class="alert alert-danger border-0">Error de conexión.</div>`;
             btn.disabled = false;
             btn.textContent = 'Guardar Cambios';
         });

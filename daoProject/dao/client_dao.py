@@ -51,8 +51,19 @@ class ClientDAO:
 
     def update_client(self, id_client, data):
         try:
-            self.mongo.db.clients.update_one({"_id": ObjectId(id_client)}, {"$set": data})
-            return True
+            if 'room' in data:
+                room_to_check = int(data['room'])
+                existing = self.mongo.db.clients.find_one({"room": room_to_check})
+                
+                if existing and str(existing['_id']) != id_client:
+                    raise ValueError("Error: La habitación ya está ocupada.")
+                
+                data['room'] = room_to_check
+
+            result = self.mongo.db.clients.update_one({"_id": ObjectId(id_client)}, {"$set": data})
+            return result.matched_count > 0
+        except ValueError:
+            raise
         except PyMongoError:
             return False
 

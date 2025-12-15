@@ -31,14 +31,14 @@
                     <div class="row mb-4">
                         <div class="col-md-4">
                             <label class="form-label text-gold small text-uppercase">Duración (Días)</label>
-                            <input type="number" name="days" min="10" max="45" class="form-control bg-dark border-secondary text-white text-center fw-bold" required value="1">
+                            <input type="number" name="days" min="1" max="30" class="form-control bg-dark border-secondary text-white text-center fw-bold" required value="1">
                         </div>
                         <div class="col-md-8">
                             <label class="form-label text-gold small text-uppercase mb-2">Selección de Habitación</label>
                             <div class="room-grid p-3 rounded border border-secondary bg-black">
                                 <input type="hidden" name="room" id="selected_room" required>
                                 <div class="d-flex flex-wrap gap-2 justify-content-center">
-                                    {% for i in range(1, 21) %}
+                                    {% for i in range(1, 22) %}
                                         {% if i in occupied_rooms %}
                                             <button type="button" class="btn btn-danger disabled opacity-50 room-btn" 
                                                     style="width: 45px; height: 45px; font-size: 0.8rem;" 
